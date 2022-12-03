@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "dmarc-report-notifier"
+version = "0.0.0"
+description = "Headless periodic DMARC report handler"
+authors = ["Andrew Kvalheim <andrew@kvalhe.im>"]
+readme = "README.md"
+packages = [{include = "dmarc_report_notifier"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
