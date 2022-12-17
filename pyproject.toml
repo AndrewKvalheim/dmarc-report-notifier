@@ -7,8 +7,12 @@ authors = ["Andrew Kvalheim <andrew@kvalhe.im>"]
 readme = "README.md"
 packages = [{include = "dmarc_report_notifier"}]
 
+[tool.poetry.scripts]
+dmarc-report-notifier = "dmarc_report_notifier:main"
+
 [tool.poetry.dependencies]
 python = "^3.10"
+parsedmarc = "^8.3.2"
 
 
 [build-system]
