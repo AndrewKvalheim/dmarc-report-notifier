@@ -59,8 +59,8 @@ def main():
         html = ''.join([f"<h2>{as_html(report['report_metadata']['org_name'])}</h2><pre>{as_html(as_json(report, ensure_ascii=False, indent=2))}</pre>" for report in notification_reports])
 
         message = EmailMessage()
-        message['From'] = config['recipient']
-        message['To'] = config['sender']
+        message['From'] = config['sender']
+        message['To'] = config['recipient']
         message['Subject'] = ', '.join(notification_issues)
         message.set_content(html, subtype='html')
 
