@@ -1,3 +1,4 @@
+import asyncio
 from email.message import EmailMessage
 from json import dumps as as_json
 from logging import basicConfig as configureLogging, info
@@ -18,7 +19,7 @@ def view(report):
     return f"<h2>{as_html(title)}</h2><pre>{as_html(json)}</pre>"
 
 
-def main():
+async def main():
     config = {
         "imap_host": environ["IMAP_HOST"],
         "imap_username": environ["IMAP_USERNAME"],
@@ -83,5 +84,5 @@ def main():
             smtp.close()
 
 
-if __name__ == "__main__":
-    main()
+def main_sync():
+    asyncio.run(main())
