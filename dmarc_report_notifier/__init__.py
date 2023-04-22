@@ -1,7 +1,6 @@
 import asyncio
-from json import dumps as as_json
+from jinja2 import Environment, PackageLoader, select_autoescape
 from logging import basicConfig as configureLogging, info
-from html import escape as as_html
 from nio import AsyncClient, JoinResponse
 from os import environ
 from parsedmarc import get_dmarc_reports_from_mailbox
@@ -12,16 +11,18 @@ configureLogging(level=environ.get("LOG_LEVEL", "INFO"))
 
 
 def view(notification_issues, notification_reports):
-    summary = ", ".join(notification_issues)
+    environment = Environment(
+        loader=PackageLoader(__package__), autoescape=select_autoescape(["html.j2"])
+    )
+    context = {
+        "issues": notification_issues,
+        "reports": notification_reports,
+    }
 
-    return f"<p>{summary}</p>" + "".join([view_report(r) for r in notification_reports])
-
-
-def view_report(report):
-    reporter = report["report_metadata"]["org_name"]
-    json = as_json(report, ensure_ascii=False, indent=2)
-
-    return f"<details><summary>Report from {as_html(reporter)}</summary><pre>{as_html(json)}</pre></details>"
+    return {
+        type: environment.get_template(f"message.{type}.j2").render(context)
+        for type in ("html", "text")
+    }
 
 
 async def main():
@@ -79,8 +80,7 @@ async def main():
             response = await matrix.join(config["matrix_room_id"])
             assert isinstance(response, JoinResponse), response
 
-        text = ", ".join(notification_issues)
-        html = view(notification_issues, notification_reports)
+        body = view(notification_issues, notification_reports)
 
         info("Send message in %s", config["matrix_room_id"])
         await matrix.room_send(
@@ -88,9 +88,9 @@ async def main():
             message_type="m.room.message",
             content={
                 "msgtype": "m.notice",
-                "body": text,
+                "body": body["text"],
                 "format": "org.matrix.custom.html",
-                "formatted_body": html,
+                "formatted_body": body["html"],
             },
         )
 

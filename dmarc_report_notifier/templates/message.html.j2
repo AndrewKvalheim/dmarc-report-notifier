@@ -1,0 +1,9 @@
+<p>{{ issues | join(", ") }}</p>
+
+{% for report in reports %}
+<details>
+  <summary>Report from {{ report["report_metadata"]["org_name"] }}</summary>
+
+  <pre>{{ report | tojson(indent=2) }}</pre>
+</details>
+{% endfor %}
