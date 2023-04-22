@@ -1,22 +1,27 @@
 import asyncio
-from email.message import EmailMessage
 from json import dumps as as_json
 from logging import basicConfig as configureLogging, info
 from html import escape as as_html
+from nio import AsyncClient, JoinResponse
 from os import environ
 from parsedmarc import get_dmarc_reports_from_mailbox
 from parsedmarc.mail import IMAPConnection
-from smtplib import SMTP
 
 
 configureLogging(level=environ.get("LOG_LEVEL", "INFO"))
 
 
-def view(report):
-    title = report["report_metadata"]["org_name"]
+def view(notification_issues, notification_reports):
+    summary = ", ".join(notification_issues)
+
+    return f"<p>{summary}</p>" + "".join([view_report(r) for r in notification_reports])
+
+
+def view_report(report):
+    reporter = report["report_metadata"]["org_name"]
     json = as_json(report, ensure_ascii=False, indent=2)
 
-    return f"<h2>{as_html(title)}</h2><pre>{as_html(json)}</pre>"
+    return f"<details><summary>Report from {as_html(reporter)}</summary><pre>{as_html(json)}</pre></details>"
 
 
 async def main():
@@ -26,12 +31,9 @@ async def main():
         "imap_password": environ["IMAP_PASSWORD"],
         "imap_folder_processed": environ["IMAP_FOLDER_PROCESSED"],
         "imap_folder_unprocessed": environ["IMAP_FOLDER_UNPROCESSED"],
-        "smtp_host": environ["SMTP_HOST"],
-        "smtp_port": int(environ["SMTP_PORT"]),
-        "smtp_username": environ["SMTP_USERNAME"],
-        "smtp_password": environ["SMTP_PASSWORD"],
-        "sender": environ["SENDER"],
-        "recipient": environ["RECIPIENT"],
+        "matrix_access_token": environ["MATRIX_ACCESS_TOKEN"],
+        "matrix_homeserver_url": environ["MATRIX_HOMESERVER_URL"],
+        "matrix_room_id": environ["MATRIX_ROOM_ID"],
     }
 
     reports = get_dmarc_reports_from_mailbox(
@@ -67,21 +69,32 @@ async def main():
             notification_reports.append(report)
 
     if notification_issues:
-        info("Send email: from %s, to %s", config["sender"], config["recipient"])
+        matrix = AsyncClient(config["matrix_homeserver_url"])
+        matrix.access_token = config["matrix_access_token"]
+        matrix.user_id = (await matrix.whoami()).user_id
+        info("Authenticated as %s", matrix.user_id)
 
-        html = "".join([view(report) for report in notification_reports])
+        if config["matrix_room_id"] not in (await matrix.joined_rooms()).rooms:
+            info("Join %s", config["matrix_room_id"])
+            response = await matrix.join(config["matrix_room_id"])
+            assert isinstance(response, JoinResponse), response
 
-        message = EmailMessage()
-        message["From"] = config["sender"]
-        message["To"] = config["recipient"]
-        message["Subject"] = ", ".join(notification_issues)
-        message.set_content(html, subtype="html")
+        text = ", ".join(notification_issues)
+        html = view(notification_issues, notification_reports)
 
-        with SMTP(config["smtp_host"], config["smtp_port"]) as smtp:
-            smtp.starttls()
-            smtp.login(config["smtp_username"], config["smtp_password"])
-            smtp.send_message(message)
-            smtp.close()
+        info("Send message in %s", config["matrix_room_id"])
+        await matrix.room_send(
+            room_id=config["matrix_room_id"],
+            message_type="m.room.message",
+            content={
+                "msgtype": "m.notice",
+                "body": text,
+                "format": "org.matrix.custom.html",
+                "formatted_body": html,
+            },
+        )
+
+        await matrix.close()
 
 
 def main_sync():
