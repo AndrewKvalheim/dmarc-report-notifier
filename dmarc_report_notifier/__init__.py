@@ -1,7 +1,13 @@
 import asyncio
 from jinja2 import Environment, PackageLoader, select_autoescape
 from logging import basicConfig as configureLogging, info
-from nio import AsyncClient, JoinResponse
+from nio import (
+    AsyncClient,
+    JoinedRoomsResponse,
+    JoinResponse,
+    RoomSendResponse,
+    WhoamiResponse,
+)
 from os import environ
 from parsedmarc import get_dmarc_reports_from_mailbox
 from parsedmarc.mail import IMAPConnection
@@ -72,10 +78,14 @@ async def main():
     if notification_issues:
         matrix = AsyncClient(config["matrix_homeserver_url"])
         matrix.access_token = config["matrix_access_token"]
-        matrix.user_id = (await matrix.whoami()).user_id
+        response = await matrix.whoami()
+        assert isinstance(response, WhoamiResponse), response
+        matrix.user_id = response.user_id
         info("Authenticated as %s", matrix.user_id)
 
-        if config["matrix_room_id"] not in (await matrix.joined_rooms()).rooms:
+        response = await matrix.joined_rooms()
+        assert isinstance(response, JoinedRoomsResponse), response
+        if config["matrix_room_id"] not in response.rooms:
             info("Join %s", config["matrix_room_id"])
             response = await matrix.join(config["matrix_room_id"])
             assert isinstance(response, JoinResponse), response
@@ -83,7 +93,7 @@ async def main():
         body = view(notification_issues, notification_reports)
 
         info("Send message in %s", config["matrix_room_id"])
-        await matrix.room_send(
+        response = await matrix.room_send(
             room_id=config["matrix_room_id"],
             message_type="m.room.message",
             content={
@@ -93,6 +103,7 @@ async def main():
                 "formatted_body": body["html"],
             },
         )
+        assert isinstance(response, RoomSendResponse), response
 
         await matrix.close()
 
