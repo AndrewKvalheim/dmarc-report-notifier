@@ -1,9 +1,53 @@
-<p>{{ issues | join(", ") }}</p>
+{% macro section(icon, status, records) %}
+  {% if records %}
+    {% set count = records | sum(attribute="count") %}
+    <details>
+      <summary>{{ icon }} {{ count }} message{{ count | pluralize }} {{ status }}</summary>
 
-{% for report in reports %}
-<details>
-  <summary>Report from {{ report["report_metadata"]["org_name"] }}</summary>
+      <table>
+        <thead>
+          <tr>
+            <th>Count</th>
+            <th>Sender</th>
+            <th>SPF</th>
+            <th>DKIM</th>
+            <th>DMARC</th>
+            <th>Reporter</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in records | sort(reverse=true, attribute="count,source.ip_address,report_metadata.org_name") %}
+            <tr>
+              <td>{{ record.count }}</td>
+              <td>
+                IP: {{ record.source.ip_address }}
+                {% if record.source.reverse_dns %}<br>rDNS: {{ record.source.reverse_dns }}{% endif %}
+                <br>Envelope: {{ record.identifiers.envelope_from }}
+                <br>Header: {{ record.identifiers.header_from }}
+              </td>
+              <td>
+                {% if record.policy_evaluated.spf == "pass" %}✅{% else %}⛔{% endif %}
+                <br>Aligned: {% if record.alignment.spf %}Yes{% else %}No{% endif %}
+                {% for result in record.auth_results.spf %}<br>{{ result.domain }}: {{ result.result }}{% endfor %}
+              </td>
+              <td>
+                {% if record.policy_evaluated.dkim == "pass" %}✅{% else %}⛔{% endif %}
+                <br>Aligned: {% if record.alignment.dkim %}Yes{% else %}No{% endif %}
+                {% for result in record.auth_results.dkim %}<br>{{ result.domain }}: {{ result.result }}{% endfor %}
+              </td>
+              <td>
+                {% if record.policy_evaluated.disposition == "none" %}✅{% else %}⛔{% endif %}
+                <br>Aligned: {% if record.alignment.dmarc %}Yes{% else %}No{% endif %}
+              </td>
+              <td>{{ record.report_metadata.org_name }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  {% endif %}
+{% endmacro %}
 
-  <pre>{{ report | tojson(indent=2) }}</pre>
-</details>
-{% endfor %}
+{{ section("⛔", "failed", failed) }}
+{{ section("⚠️", "passed with issues", passed_partially) }}
+{{ section("✅", "passed", passed_fully) }}

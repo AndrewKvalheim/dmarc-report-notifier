@@ -1,1 +1,10 @@
-{{ issues | join(", ") }}
+{% macro section(icon, status, records) -%}
+  {%- if records -%}
+    {%- set count = records | sum(attribute="count") -%}
+    {{ icon }} {{ count }} message{{ count | pluralize }} {{ status }}
+  {%- endif -%}
+{%- endmacro -%}
+
+{{ section("⛔", "failed", failed) }}
+{{ section("⚠️", "passed with issues", passed_partially) }}
+{{ section("✅", "passed", passed_fully) }}

@@ -1,6 +1,14 @@
 import asyncio
 from jinja2 import Environment, PackageLoader, select_autoescape
-from logging import basicConfig as configureLogging, info
+from jinja2_pluralize import pluralize_dj
+from logging import (
+    basicConfig as configureLogging,
+    getLevelName,
+    info,
+    ERROR,
+    INFO,
+    WARN,
+)
 from nio import (
     AsyncClient,
     JoinedRoomsResponse,
@@ -16,13 +24,16 @@ from parsedmarc.mail import IMAPConnection
 configureLogging(level=environ.get("LOG_LEVEL", "INFO"))
 
 
-def view(notification_issues, notification_reports):
+def view(passed_fully, passed_partially, failed):
     environment = Environment(
-        loader=PackageLoader(__package__), autoescape=select_autoescape(["html.j2"])
+        autoescape=select_autoescape(["html.j2"]),
+        loader=PackageLoader(__package__),
     )
+    environment.filters["pluralize"] = pluralize_dj
     context = {
-        "issues": notification_issues,
-        "reports": notification_reports,
+        "failed": failed,
+        "passed_fully": passed_fully,
+        "passed_partially": passed_partially,
     }
 
     return {
@@ -41,6 +52,7 @@ async def main():
         "matrix_access_token": environ["MATRIX_ACCESS_TOKEN"],
         "matrix_homeserver_url": environ["MATRIX_HOMESERVER_URL"],
         "matrix_room_id": environ["MATRIX_ROOM_ID"],
+        "report_level": getLevelName(environ.get("REPORT_LEVEL", "WARN")),
     }
 
     reports = get_dmarc_reports_from_mailbox(
@@ -51,31 +63,33 @@ async def main():
         ),
         reports_folder=config["imap_folder_unprocessed"],
         archive_folder=config["imap_folder_processed"],
-    )
+    )["aggregate_reports"]
 
-    notification_issues, notification_reports = set(), []
-    for report in reports["aggregate_reports"]:
-        issues = set()
+    passed_fully, passed_partially, failed = [], [], []
+    for report in reports:
         for record in report["records"]:
-            if record["policy_evaluated"]["dkim"] == "fail":
-                issues.add("DKIM failure")
-            elif not record["alignment"]["dkim"]:
-                issues.add("DKIM misalignment")
-            if record["policy_evaluated"]["spf"] == "fail":
-                issues.add("SPF failure")
-            elif not record["alignment"]["spf"]:
-                issues.add("SPF misalignment")
-        info(
-            "Report %s from %s: %s",
-            report["report_metadata"]["report_id"],
-            report["report_metadata"]["org_name"],
-            ", ".join(issues) if issues else "OK",
-        )
-        if issues:
-            notification_issues.update(issues)
-            notification_reports.append(report)
+            id = "{}/{}".format(
+                report["report_metadata"]["report_id"], record["source"]["ip_address"]
+            )
+            result = record["policy_evaluated"]
 
-    if notification_issues:
+            record["report_metadata"] = report["report_metadata"]
+
+            if result["disposition"] == "none":
+                if result["spf"] == "pass" and result["dkim"] == "pass":
+                    info("Passed: %s", id)
+                    if config["report_level"] <= INFO:
+                        passed_fully.append(record)
+                else:
+                    info("Passed with issues: %s", id)
+                    if config["report_level"] <= WARN:
+                        passed_partially.append(record)
+            else:
+                info("Failed: %s", id)
+                if config["report_level"] <= ERROR:
+                    failed.append(record)
+
+    if passed_fully or passed_partially or failed:
         matrix = AsyncClient(config["matrix_homeserver_url"])
         matrix.access_token = config["matrix_access_token"]
         response = await matrix.whoami()
@@ -90,7 +104,7 @@ async def main():
             response = await matrix.join(config["matrix_room_id"])
             assert isinstance(response, JoinResponse), response
 
-        body = view(notification_issues, notification_reports)
+        body = view(passed_fully, passed_partially, failed)
 
         info("Send message in %s", config["matrix_room_id"])
         response = await matrix.room_send(
