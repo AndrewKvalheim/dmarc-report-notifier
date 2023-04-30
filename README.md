@@ -15,10 +15,10 @@ Example notification:
 >     <tbody>
 >       <tr>
 >         <td>1</td>
->         <td>IP: 192.0.2.1<br />rDNS: example.com<br />Envelope: example.com<br />Header: example.com</td>
->         <td>⛔<br />Aligned: No <br />example.com: pass</td>
->         <td>⛔<br />Aligned: No <br />example.com: pass</td>
->         <td>⛔<br />Aligned: No</td>
+>         <td>IP: <code>192.0.2.1</code><br />rDNS: <code>example.com</code><br />Envelope: <code>example.com</code><br />Header: <code>example.com</code></td>
+>         <td>⛔<br /><code>example.com</code>: pass</td>
+>         <td>⛔<br /><code>example.com</code>: pass</td>
+>         <td>⛔</td>
 >         <td>Example</td>
 >       </tr>
 >     </tbody>
@@ -33,34 +33,34 @@ Example notification:
 >     <tbody>
 >       <tr>
 >         <td>6</td>
->         <td>IP: 192.0.2.2<br />rDNS: example.com<br />Envelope: example.com <br />Header: example.com</td>
->         <td>✅<br />Aligned: Yes <br />example.com: pass</td>
->         <td>✅<br />Aligned: Yes<br />example.com: pass</td>
->         <td>✅<br />Aligned: Yes</td>
+>         <td>IP: <code>192.0.2.2</code><br />rDNS: <code>example.com</code><br />Envelope: <code>example.com</code><br />Header: <code>example.com</code></td>
+>         <td>✅<br /><code>example.com</code>: pass</td>
+>         <td>✅<br /><code>example.com</code>: pass</td>
+>         <td>✅</td>
 >         <td>Example</td>
 >       </tr>
 >       <tr>
 >         <td>3</td>
->         <td>IP: 192.0.2.3<br />rDNS: example.com<br />Envelope: example.com <br />Header: example.com</td>
->         <td>✅<br />Aligned: Yes <br />example.com: pass</td>
->         <td>✅<br />Aligned: Yes<br />example.com: pass</td>
->         <td>✅<br />Aligned: Yes</td>
+>         <td>IP: <code>192.0.2.3</code><br />rDNS: <code>example.com</code><br />Envelope: <code>example.com</code><br />Header: <code>example.com</code></td>
+>         <td>✅<br /><code>example.com</code>: pass</td>
+>         <td>✅<br /><code>example.com</code>: pass</td>
+>         <td>✅</td>
 >         <td>Example</td>
 >       </tr>
 >       <tr>
 >         <td>2</td>
->         <td>IP: 192.0.2.3<br />rDNS: example.com<br />Envelope: example.com <br />Header: example.com</td>
->         <td>✅<br />Aligned: Yes <br />example.com: pass</td>
->         <td>✅<br />Aligned: Yes<br />example.com: pass</td>
->         <td>✅<br />Aligned: Yes</td>
+>         <td>IP: <code>192.0.2.3</code><br />rDNS: <code>example.com</code><br />Envelope: <code>example.com</code><br />Header: <code>example.com</code></td>
+>         <td>✅<br /><code>example.com</code>: pass</td>
+>         <td>✅<br /><code>example.com</code>: pass</td>
+>         <td>✅</td>
 >         <td>Example</td>
 >       </tr>
 >       <tr>
 >         <td>1</td>
->         <td>IP: 192.0.2.4<br />rDNS: example.com <br />Envelope: example.com<br />Header: example.com</td>
->         <td>✅<br />Aligned: Yes <br />example.com: pass</td>
->         <td>✅<br />Aligned: Yes<br />example.com: pass</td>
->         <td>✅<br />Aligned: Yes</td>
+>         <td>IP: <code>192.0.2.4</code><br />rDNS: <code>example.com</code><br />Envelope: <code>example.com</code><br />Header: <code>example.com</code></td>
+>         <td>✅<br /><code>example.com</code>: pass</td>
+>         <td>✅<br /><code>example.com</code>: pass</td>
+>         <td>✅</td>
 >         <td>Example</td>
 >       </tr>
 >     </tbody>

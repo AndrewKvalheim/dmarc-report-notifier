@@ -1,8 +1,12 @@
-{% macro section(icon, status, records) %}
+{% macro icon(status) -%}
+  {{ {"fail": "⛔", "none": "✅", "pass": "✅", "quarantine": "⚠️", "reject": "⛔"}[status] | default(status) }}
+{%- endmacro %}
+
+{% macro section(summary_icon, status, records) %}
   {% if records %}
     {% set count = records | sum(attribute="count") %}
     <details>
-      <summary>{{ icon }} {{ count }} message{{ count | pluralize }} {{ status }}</summary>
+      <summary>{{ summary_icon }} {{ count }} message{{ count | pluralize }} {{ status }}</summary>
 
       <table>
         <thead>
@@ -20,25 +24,20 @@
             <tr>
               <td>{{ record.count }}</td>
               <td>
-                IP: {{ record.source.ip_address }}
-                {% if record.source.reverse_dns %}<br>rDNS: {{ record.source.reverse_dns }}{% endif %}
-                <br>Envelope: {{ record.identifiers.envelope_from }}
-                <br>Header: {{ record.identifiers.header_from }}
+                IP: <code>{{ record.source.ip_address }}</code>
+                {% if record.source.reverse_dns %}<br>rDNS: <code>{{ record.source.reverse_dns }}</code>{% endif %}
+                {% if record.identifiers.envelope_from %}<br>Envelope: <code>{{ record.identifiers.envelope_from }}</code>{% endif %}
+                {% if record.identifiers.header_from %}<br>Header: <code>{{ record.identifiers.header_from }}</code>{% endif %}
               </td>
               <td>
-                {% if record.policy_evaluated.spf == "pass" %}✅{% else %}⛔{% endif %}
-                <br>Aligned: {% if record.alignment.spf %}Yes{% else %}No{% endif %}
-                {% for result in record.auth_results.spf %}<br>{{ result.domain }}: {{ result.result }}{% endfor %}
+                {{ icon(record.policy_evaluated.spf) }}
+                {% for r in record.auth_results.spf %}<br><code>{{ r.domain }}</code>: {{ r.result }}{% endfor %}
               </td>
               <td>
-                {% if record.policy_evaluated.dkim == "pass" %}✅{% else %}⛔{% endif %}
-                <br>Aligned: {% if record.alignment.dkim %}Yes{% else %}No{% endif %}
-                {% for result in record.auth_results.dkim %}<br>{{ result.domain }}: {{ result.result }}{% endfor %}
+                {{ icon(record.policy_evaluated.dkim) }}
+                {% for r in record.auth_results.dkim %}<br><code>{{ r.domain }}</code>: {{ r.result }}{% endfor %}
               </td>
-              <td>
-                {% if record.policy_evaluated.disposition == "none" %}✅{% else %}⛔{% endif %}
-                <br>Aligned: {% if record.alignment.dmarc %}Yes{% else %}No{% endif %}
-              </td>
+              <td>{{ icon(record.policy_evaluated.disposition) }}</td>
               <td>{{ record.report_metadata.org_name }}</td>
             </tr>
           {% endfor %}
