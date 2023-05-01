@@ -15,6 +15,5 @@ COPY dmarc_report_notifier ./dmarc_report_notifier
 RUN poetry install --no-cache --no-interaction --only-root
 
 # Schedule
-RUN echo '@daily poetry run dmarc-report-notifier' > crontab
-
-CMD [ "supercronic", "crontab" ]
+ENV SCHEDULE="@daily"
+CMD supercronic <( echo "$SCHEDULE poetry run dmarc-report-notifier" )
