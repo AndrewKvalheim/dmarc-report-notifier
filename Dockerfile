@@ -1,7 +1,7 @@
 FROM python:3-alpine
 
 # System dependencies
-RUN apk add --no-cache poetry
+RUN apk add --no-cache poetry supercronic
 
 WORKDIR /usr/src/app
 
@@ -14,4 +14,7 @@ COPY README.md ./
 COPY dmarc_report_notifier ./dmarc_report_notifier
 RUN poetry install --no-cache --no-interaction --only-root
 
-CMD [ "poetry", "run", "dmarc-report-notifier" ]
+# Schedule
+RUN echo '@daily poetry run dmarc-report-notifier' > crontab
+
+CMD [ "supercronic", "crontab" ]
