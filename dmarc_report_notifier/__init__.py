@@ -52,7 +52,7 @@ async def main():
         "matrix_access_token": environ["MATRIX_ACCESS_TOKEN"],
         "matrix_homeserver_url": environ["MATRIX_HOMESERVER_URL"],
         "matrix_room_id": environ["MATRIX_ROOM_ID"],
-        "report_level": getLevelName(environ.get("REPORT_LEVEL", "WARN")),
+        "notification_level": getLevelName(environ.get("NOTIFICATION_LEVEL", "WARN")),
     }
 
     reports = get_dmarc_reports_from_mailbox(
@@ -78,15 +78,15 @@ async def main():
             if result["disposition"] == "none":
                 if result["spf"] == "pass" and result["dkim"] == "pass":
                     info("Passed: %s", id)
-                    if config["report_level"] <= INFO:
+                    if config["notification_level"] <= INFO:
                         passed_fully.append(record)
                 else:
                     info("Passed with issues: %s", id)
-                    if config["report_level"] <= WARN:
+                    if config["notification_level"] <= WARN:
                         passed_partially.append(record)
             else:
                 info("Failed: %s", id)
-                if config["report_level"] <= ERROR:
+                if config["notification_level"] <= ERROR:
                     failed.append(record)
 
     if passed_fully or passed_partially or failed:
