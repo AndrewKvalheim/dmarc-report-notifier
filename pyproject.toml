@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dmarc-report-notifier"
-version = "0.0.0"
+version = "1.0.0"
 description = "Headless periodic DMARC report handler"
 license = "GPL-3.0-only"
 authors = ["Andrew Kvalheim <andrew@kvalhe.im>"]
