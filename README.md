@@ -67,6 +67,24 @@ Example notification:
 >   </table>
 > </details>
 
+Configuration:
+
+  - Incoming reports:
+    - `IMAP_HOST`: parsedmarc `imap.host`
+    - `IMAP_USERNAME`: parsedmarc `imap.user`
+    - `IMAP_PASSWORD`: parsedmarc `imap.password`
+    - `IMAP_FOLDER_PROCESSED`: parsedmarc `mailbox.reports_folder`
+    - `IMAP_FOLDER_UNPROCESSED`: parsedmarc `mailbox.archive_folder`
+  - Outgoing notifications:
+    - `NOTIFICATION_LEVEL`: level of DMARC failure to report (`INFO`/`WARN`/`ERROR`)
+    - `MATRIX_HOMESERVER_URL`: base URL of Matrix client-server API
+    - `MATRIX_ACCESS_TOKEN`: secret access token of user to send notifications from
+    - `MATRIX_ROOM_ID`: room ID to send notifications to
+  - Schedule:
+    - `SCHEDULE`: [Supercronic] cron expression
+    - `TZ`: Supercronic time zone
+
 [DMARC]: https://en.wikipedia.org/wiki/DMARC
 [Matrix]: https://matrix.org/
 [parsedmarc]: https://github.com/domainaware/parsedmarc
+[Supercronic]: https://github.com/aptible/supercronic
