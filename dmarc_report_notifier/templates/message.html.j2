@@ -1,5 +1,5 @@
 {% macro icon(status) -%}
-  {{ {"fail": "⛔", "none": "✅", "pass": "✅", "quarantine": "⚠️", "reject": "⛔"}[status] | default(status) }}
+  {{ {"fail": "⛔", "none": "✅", "pass": "✅", "quarantine": "⛔", "reject": "⛔"}[status] | default(status) }}
 {%- endmacro %}
 
 {% macro section(summary_icon, status, records) %}
