@@ -3,6 +3,9 @@ FROM python:3-alpine
 # System dependencies
 RUN apk add --no-cache poetry supercronic
 
+# Application context
+RUN adduser --disabled-password app
+USER app
 WORKDIR /usr/src/app
 
 # Application dependencies
