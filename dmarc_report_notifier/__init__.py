@@ -24,16 +24,16 @@ from parsedmarc.mail import IMAPConnection
 configureLogging(level=environ.get("LOG_LEVEL", "INFO"))
 
 
-def view(passed_fully, passed_partially, failed):
+def view(allowed, allowed_with_failures, blocked):
     environment = Environment(
         autoescape=select_autoescape(["html.j2"]),
         loader=PackageLoader(__package__),
     )
     environment.filters["pluralize"] = pluralize_dj
     context = {
-        "failed": failed,
-        "passed_fully": passed_fully,
-        "passed_partially": passed_partially,
+        "allowed": allowed,
+        "allowed_with_failures": allowed_with_failures,
+        "blocked": blocked,
     }
 
     return {
@@ -65,7 +65,7 @@ async def main():
         archive_folder=config["imap_folder_processed"],
     )["aggregate_reports"]
 
-    passed_fully, passed_partially, failed = [], [], []
+    allowed, allowed_with_failures, blocked = [], [], []
     for report in reports:
         for record in report["records"]:
             id = "{}/{}".format(
@@ -77,19 +77,19 @@ async def main():
 
             if result["disposition"] == "none":
                 if result["spf"] == "pass" and result["dkim"] == "pass":
-                    info("Passed: %s", id)
+                    info("Allowed: %s", id)
                     if config["notification_level"] <= INFO:
-                        passed_fully.append(record)
+                        allowed.append(record)
                 else:
-                    info("Passed with issues: %s", id)
+                    info("Allowed with failures: %s", id)
                     if config["notification_level"] <= WARN:
-                        passed_partially.append(record)
+                        allowed_with_failures.append(record)
             else:
-                info("Failed: %s", id)
+                info("Blocked: %s", id)
                 if config["notification_level"] <= ERROR:
-                    failed.append(record)
+                    blocked.append(record)
 
-    if passed_fully or passed_partially or failed:
+    if allowed or allowed_with_failures or blocked:
         matrix = AsyncClient(config["matrix_homeserver_url"])
         matrix.access_token = config["matrix_access_token"]
         response = await matrix.whoami()
@@ -104,7 +104,7 @@ async def main():
             response = await matrix.join(config["matrix_room_id"])
             assert isinstance(response, JoinResponse), response
 
-        body = view(passed_fully, passed_partially, failed)
+        body = view(allowed, allowed_with_failures, blocked)
 
         info("Send message in %s", config["matrix_room_id"])
         response = await matrix.room_send(

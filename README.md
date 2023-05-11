@@ -7,7 +7,7 @@ Intended to be scheduled as a daily job, this uses [parsedmarc] to read DMARC re
 Example notification:
 
 > <details>
->   <summary>⛔ 1 message failed</summary>
+>   <summary>⛔ 1 message blocked</summary>
 >   <table>
 >     <thead>
 >       <tr><th>Count</th><th>Sender</th><th>SPF</th><th>DKIM</th><th>DMARC</th><th>Reporter</th></tr>
@@ -25,7 +25,7 @@ Example notification:
 >   </table>
 > </details>
 > <details>
->   <summary>✅ 12 messages passed</summary>
+>   <summary>✅ 12 messages allowed</summary>
 >   <table>
 >     <thead>
 >       <tr><th>Count</th><th>Sender</th><th>SPF</th><th>DKIM</th><th>DMARC</th><th>Reporter</th></tr>

@@ -47,6 +47,6 @@
   {% endif %}
 {% endmacro %}
 
-{{ section("⛔", "failed", failed) }}
-{{ section("⚠️", "passed with issues", passed_partially) }}
-{{ section("✅", "passed", passed_fully) }}
+{{ section("⛔", "blocked", blocked) }}
+{{ section("⚠️", "allowed with failures", allowed_with_failures) }}
+{{ section("✅", "allowed", allowed) }}
