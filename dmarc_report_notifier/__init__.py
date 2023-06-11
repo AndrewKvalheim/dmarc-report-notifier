@@ -78,18 +78,19 @@ async def main():
             if result["disposition"] == "none":
                 if result["spf"] == "pass" and result["dkim"] == "pass":
                     info("Allowed: %s", id)
-                    if config["notification_level"] <= INFO:
-                        allowed.append(record)
+                    allowed.append(record)
                 else:
                     info("Allowed with failures: %s", id)
-                    if config["notification_level"] <= WARN:
-                        allowed_with_failures.append(record)
+                    allowed_with_failures.append(record)
             else:
                 info("Blocked: %s", id)
-                if config["notification_level"] <= ERROR:
-                    blocked.append(record)
+                blocked.append(record)
 
-    if allowed or allowed_with_failures or blocked:
+    if (
+        (config["notification_level"] <= ERROR and blocked)
+        or (config["notification_level"] <= WARN and allowed_with_failures)
+        or (config["notification_level"] <= INFO and allowed)
+    ):
         matrix = AsyncClient(config["matrix_homeserver_url"])
         matrix.access_token = config["matrix_access_token"]
         response = await matrix.whoami()
