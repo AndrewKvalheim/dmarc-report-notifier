@@ -25,9 +25,9 @@
               <td>{{ record.count }}</td>
               <td>
                 IP: <code>{{ record.source.ip_address }}</code>
-                {% if record.source.reverse_dns %}<br>rDNS: <code>{{ record.source.reverse_dns }}</code>{% endif %}
-                {% if record.identifiers.envelope_from %}<br>Envelope: <code>{{ record.identifiers.envelope_from }}</code>{% endif %}
-                {% if record.identifiers.header_from %}<br>Header: <code>{{ record.identifiers.header_from }}</code>{% endif %}
+                <br>rDNS: {% if record.source.reverse_dns %}<code>{{ record.source.reverse_dns }}</code>{% else %}none{% endif %}
+                <br>Envelope: {% if record.identifiers.envelope_from %}<code>{{ record.identifiers.envelope_from }}</code>{% else %}none{% endif %}
+                <br>Header: {% if record.identifiers.header_from %}<code>{{ record.identifiers.header_from }}</code>{% else %}none{% endif %}
               </td>
               <td>
                 {{ icon(record.policy_evaluated.spf) }}
