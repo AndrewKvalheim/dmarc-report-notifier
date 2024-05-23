@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{ include = "dmarc_report_notifier" }]
 
 [tool.poetry.scripts]
-dmarc-report-notifier = "dmarc_report_notifier:main_sync"
+dmarc-report-notifier = "dmarc_report_notifier.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
