@@ -80,11 +80,7 @@ Configuration:
     - `MATRIX_HOMESERVER_URL`: base URL of Matrix client-server API
     - `MATRIX_ACCESS_TOKEN`: secret access token of user to send notifications from
     - `MATRIX_ROOM_ID`: room ID to send notifications to
-  - Schedule:
-    - `SCHEDULE`: [Supercronic] cron expression
-    - `TZ`: Supercronic time zone
 
 [DMARC]: https://en.wikipedia.org/wiki/DMARC
 [Matrix]: https://matrix.org/
 [parsedmarc]: https://github.com/domainaware/parsedmarc
-[Supercronic]: https://github.com/aptible/supercronic
