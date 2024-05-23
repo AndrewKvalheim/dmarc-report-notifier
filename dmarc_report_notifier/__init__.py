@@ -1,4 +1,3 @@
-import asyncio
 from jinja2 import Environment, PackageLoader, select_autoescape
 from jinja2_pluralize import pluralize_dj
 from logging import (
@@ -121,7 +120,3 @@ async def main():
         assert isinstance(response, RoomSendResponse), response
 
         await matrix.close()
-
-
-def main_sync():
-    asyncio.run(main())
