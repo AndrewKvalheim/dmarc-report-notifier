@@ -21,3 +21,15 @@ build-backend = "hatchling.build"
 [tool.hatch]
 build.targets.sdist.include = ["dmarc_report_notifier"]
 build.targets.wheel.include = ["dmarc_report_notifier"]
+
+[tool.bumpversion]
+pre_commit_hooks = [
+  "git diff-index --quiet HEAD -- 'uv.lock'",
+  "uv lock --upgrade-package 'dmarc-report-notifier'",
+  "git add 'uv.lock'",
+]
+commit = true
+message = "Version {new_version}"
+tag = true
+tag_message = "Version {new_version}"
+sign_tags = true
