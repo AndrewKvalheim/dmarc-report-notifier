@@ -6,7 +6,7 @@ license = "GPL-3.0-only"
 authors = [{ name = "Andrew Kvalheim", email = "andrew@kvalhe.im" }]
 readme = "README.md"
 scripts.dmarc-report-notifier = "dmarc_report_notifier.cli:main"
-requires-python = "~=3.10"
+requires-python = ">=3.10,<3.14" # Pending mjs/imapclient#618
 dependencies = [
   "jinja2>=3.1.2,<4",
   "jinja2-pluralize>=0.3.0,<0.4",
